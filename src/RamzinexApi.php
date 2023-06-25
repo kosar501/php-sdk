@@ -3,73 +3,32 @@
 namespace ramzinex;
 
 
+use Psr\SimpleCache\InvalidArgumentException;
+
 class RamzinexApi
 {
 
     /**
      * @var string
      */
-    private $token;
-
-    /**
-     * @var string
-     */
     private $headers;
 
+    private string $secret;
+    private string $api_key;
 
-    public function __construct($token = null, array $headers = null)
+    private FileCache $cache_file;
+
+    public function __construct($secret = null, $api_key = null, array $headers = null, $cache_folder = null)
     {
         if (!extension_loaded('curl')) {
             die('cURL library is not loaded');
             exit;
         }
-        $this->token = trim($token);
+        $this->secret = $secret;
+        $this->api_key = $api_key;
         $this->headers = $headers;
+        $this->cache_file = new FileCache($cache_folder);
     }
-
-
-    protected function execute($url, $post = false, $private = false, $data = null)
-    {
-
-        $headers = array(
-            'Accept: application/json',
-            'charset: utf-8',
-            'Content-Type: application/json'
-        );
-        if ($this->token != null && $private == true) {
-            $headers[] = 'Authorization: Bearer ' . $this->token;
-        }
-        if ($this->headers != null) {
-            foreach ($this->headers as $header) {
-                $headers[] = $header;
-            }
-        }
-
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_VERBOSE, true);
-        if ($post == true) {
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-
-        } else {
-            curl_setopt($ch, CURLOPT_POST, false);
-        }
-        $result = curl_exec($ch);
-        curl_close($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        return [
-            "http_code" => $httpCode,
-            "result" => json_decode($result, true)
-        ];
-
-
-    }
-
 
     /**
      * دریافت مشخصات وضعیت بازارهای رمزینکس *
@@ -258,7 +217,7 @@ class RamzinexApi
         if (!is_null($data)) {
             $fields_string = http_build_query($data);
         }
-        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/deposits/currency/' . $currencyId . '?' .$fields_string, false, true);
+        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/deposits/currency/' . $currencyId . '?' . $fields_string, false, true);
     }
 
     /**
@@ -268,7 +227,7 @@ class RamzinexApi
      */
     public function getDepositDetail($depositId)
     {
-        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/deposits/' . $depositId, false,true);
+        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/deposits/' . $depositId, false, true);
     }
 
     /**
@@ -282,7 +241,7 @@ class RamzinexApi
         if (!is_null($data)) {
             $fields_string = http_build_query($data);
         }
-        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/withdraws'. '?' .$fields_string,false,true);
+        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/withdraws' . '?' . $fields_string, false, true);
     }
 
     /**
@@ -292,7 +251,7 @@ class RamzinexApi
      */
     public function getWithdrawDetail($withdrawId)
     {
-        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/withdraws/' . $withdrawId, false,true);
+        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/withdraws/' . $withdrawId, false, true);
     }
 
     /**
@@ -311,10 +270,105 @@ class RamzinexApi
      * @param $currencyId
      * @return array
      */
-    public function getCurrencies()
+    public function getCurrencies(): array
     {
         return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/currencies', false, true);
 
     }
+
+
+    /**
+     * ایجاد توکن خصوصی با استفاده از api_key && secret_key *
+     * مدت زمان اعتبار 10 دقیقه می باشد *
+     * @return mixed
+     * @throws InvalidArgumentException
+     */
+    private function generateToken()
+    {
+        $data = $this->parseData($this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/auth/api_key/getToken', true, false, [
+            'secret' => $this->secret,
+            'api_key' => $this->api_key
+        ]));
+
+        //save in cache file //
+        $this->cache_file->setItem('ramzinex_token', $this->token, 600);
+
+        return @$data['token'];
+    }
+
+    /**
+     * ایجاد مجدد توکن در صورت انقضا *
+     * @return mixed
+     * @throws InvalidArgumentException
+     */
+    private function refreshToken()
+    {
+        if ($token = $this->cache_file->getItem('ramzinex_token')) {
+            return $token;
+        } else
+            return $this->generateToken();
+
+    }
+
+
+    /**
+     * درصورتی که api نیاز به ارسال توکن دارد مقدار private را true ارسال کنید *
+     * @param $url
+     * @param $post
+     * @param $private
+     * @param $data
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    protected function execute($url, $post = false, $private = false, $data = null): array
+    {
+
+
+        $headers = array(
+            'Accept: application/json',
+            'charset: utf-8',
+            'Content-Type: application/json'
+        );
+        if ($private) {
+            $headers[] = 'Authorization: Bearer ' . $this->refreshToken();
+        }
+        if ($this->headers != null) {
+            foreach ($this->headers as $header) {
+                $headers[] = $header;
+            }
+        }
+
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_VERBOSE, true);
+        if ($post) {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+        } else {
+            curl_setopt($ch, CURLOPT_POST, false);
+        }
+        $result = curl_exec($ch);
+        curl_close($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        return [
+            "http_code" => $httpCode,
+            "result" => json_decode($result, true)
+        ];
+
+
+    }
+
+
+    private function parseData($response)
+    {
+        if ($response['http_code'] == 200)
+            return @$response['result'] && @$response['result']['data'] ? $response['result']['data'] : [];
+    }
+
 }
 
