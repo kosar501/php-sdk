@@ -352,7 +352,8 @@ class RamzinexApi
             'Content-Type: application/json'
         );
         if ($private) {
-            $headers[] = 'Authorization: Bearer ' . $this->refreshToken();
+            $headers[] = 'Authorization2: Bearer ' . $this->refreshToken();
+            $headers[] = 'x-api-key:' . $this->api_key;
         }
         if ($this->headers != null) {
             foreach ($this->headers as $header) {
