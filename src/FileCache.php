@@ -25,15 +25,18 @@ class FileCache
      * @throws InvalidArgumentException
      * default on 10 minuets *
      */
-    public function setItem($key, $value, $expire_time =  null)
+    public function setItem($key, $value, $expire_time =  null): void
     {
         $this->instance->set($key, $value, $expire_time);
 
     }
 
+    /**
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function getItem($key)
     {
-        return $this->getItem($key);
+        return $this->instance->get($key);
     }
 
     /**
@@ -53,7 +56,7 @@ class FileCache
      * @return void
      * @throws InvalidArgumentException
      */
-    public function clearCache($key = null)
+    public function clearCache($key = null): void
     {
         if ($key)
             $this->instance->delete($key);

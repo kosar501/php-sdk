@@ -16,7 +16,7 @@ class RamzinexApi
     private string $secret;
     private string $api_key;
 
-    private FileCache $cache_file;
+    private FileCache $cache;
 
     public function __construct($secret = null, $api_key = null, array $headers = null, $cache_folder = null)
     {
@@ -27,7 +27,7 @@ class RamzinexApi
         $this->secret = $secret;
         $this->api_key = $api_key;
         $this->headers = $headers;
-        $this->cache_file = new FileCache($cache_folder);
+        $this->cache = new FileCache($cache_folder);
     }
 
     /**
@@ -314,7 +314,7 @@ class RamzinexApi
         ]));
 
         //save in cache file //
-        $this->cache_file->setItem('ramzinex_token',@$data['token'], 600);
+        $this->cache->setItem('ramzinex_token', @$data['token'], 600);
 
         return @$data['token'];
     }
@@ -326,8 +326,8 @@ class RamzinexApi
      */
     private function refreshToken(): mixed
     {
-        if ($token = $this->cache_file->getItem('ramzinex_token')) {
-            return $token;
+        if (!$this->cache->isExpired('ramzinex_token')) {
+            return $this->cache->getItem('ramzinex_token');
         } else
             return $this->generateToken();
 
@@ -345,7 +345,6 @@ class RamzinexApi
      */
     protected function execute($url, $post = false, $private = false, $data = null): array
     {
-
 
         $headers = array(
             'Accept: application/json',
