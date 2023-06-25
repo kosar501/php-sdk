@@ -13,12 +13,12 @@ class FileCache
 {
     protected FilesystemCachePool $instance;
 
-    public function __construct($folder = null)
+    public function __construct()
     {
-        $filesystemAdapter = new Local(__DIR__ . '/');
+        $filesystemAdapter = new Local(__DIR__ . '/cache/');
         $filesystem = new Filesystem($filesystemAdapter);
 
-        $this->instance = new FilesystemCachePool($filesystem, $folder);
+        $this->instance = new FilesystemCachePool($filesystem);
     }
 
     /**

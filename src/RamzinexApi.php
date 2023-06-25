@@ -18,7 +18,7 @@ class RamzinexApi
 
     private FileCache $cache;
 
-    public function __construct($secret = null, $api_key = null, array $headers = null, $cache_folder = null)
+    public function __construct($secret = null, $api_key = null, array $headers = null)
     {
         if (!extension_loaded('curl')) {
             die('cURL library is not loaded');
@@ -27,7 +27,7 @@ class RamzinexApi
         $this->secret = $secret;
         $this->api_key = $api_key;
         $this->headers = $headers;
-        $this->cache = new FileCache($cache_folder);
+        $this->cache = new FileCache();
     }
 
     /**
