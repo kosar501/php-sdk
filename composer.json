@@ -12,9 +12,10 @@
     }
   ],
   "require": {
-    "php": ">=7.4.0",
+    "php": "^8.0",
     "ext-curl": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "cache/filesystem-adapter": "^1.2"
   },
   "autoload": {
     "psr-4": {
