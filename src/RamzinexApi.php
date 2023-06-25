@@ -11,7 +11,7 @@ class RamzinexApi
     /**
      * @var string
      */
-    private $headers;
+    private string|array|null $headers;
 
     private string $secret;
     private string $api_key;
@@ -32,9 +32,10 @@ class RamzinexApi
 
     /**
      * دریافت مشخصات وضعیت بازارهای رمزینکس *
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getAllPrice()
+    public function getAllPrice(): array
     {
         return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/pairs');
     }
@@ -42,9 +43,10 @@ class RamzinexApi
     /**
      * لیست سفارشات بازار*
      * @param $pairId
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getOrderBook($pairId)
+    public function getOrderBook($pairId): array
     {
         return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/orderbooks/' . $pairId . '/buys_sells');
     }
@@ -52,9 +54,10 @@ class RamzinexApi
     /**
      * مشخصات یک بازار مشخص *
      * @param $pairId
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getPrice($pairId)
+    public function getPrice($pairId): array
     {
         return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/pairs/' . $pairId);
     }
@@ -62,9 +65,10 @@ class RamzinexApi
     /**
      * دریافت سفارش‌های کاربر *
      * @param array|null $body |limit,offset,pairs,states,isbuy|
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getOrders(array $body = null)
+    public function getOrders(array $body = null): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/orders3', true, true, $body);
     }
@@ -72,9 +76,10 @@ class RamzinexApi
     /**
      * مشخصات یک سفارش مشخص *
      * @param $orderId
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getOneOrder($orderId)
+    public function getOneOrder($orderId): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/orders2/' . $orderId, false, true);
     }
@@ -85,9 +90,10 @@ class RamzinexApi
      * @param $amount
      * @param $price
      * @param $type |buy,sell|
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function setLimitOrder($pairId, $amount, $price, $type)
+    public function setLimitOrder($pairId, $amount, $price, $type): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/orders/limit/', true, true, ['pair_id' => $pairId, 'amount' => $amount, 'price' => $price, 'type' => $type]);
     }
@@ -97,9 +103,10 @@ class RamzinexApi
      * @param $pairId
      * @param $amount
      * @param $type |buy,sell|
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function setMarketOrder($pairId, $amount, $type)
+    public function setMarketOrder($pairId, $amount, $type): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/orders/market/', true, true, ['pair_id' => $pairId, 'amount' => $amount, 'type' => $type]);
     }
@@ -107,18 +114,20 @@ class RamzinexApi
     /**
      * کنسل کردن سفارش موجود *
      * @param $orderId
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function cancelOrder($orderId)
+    public function cancelOrder($orderId): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/orders/' . $orderId . '/cancel', true, true);
     }
 
     /**
      * میزان دارایی کاربر *
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getBalanceSummary()
+    public function getBalanceSummary(): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/summaryDesktop', false, true);
     }
@@ -126,27 +135,30 @@ class RamzinexApi
     /**
      * میزان سرمایه در دسترس کاربر برای یک ارز مشخص *
      * @param $currencyID
-     * @return false|mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getAllOneBalance($currencyID)
+    public function getAllOneBalance($currencyID): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/total/currency/' . $currencyID, false, true);
     }
 
 
     /**
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function setRefreshBalance()
+    public function setRefreshBalance(): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/refresh', true, true);
     }
 
     /**
      * @param $currencyId
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getCurrencyBalance($currencyId)
+    public function getCurrencyBalance($currencyId): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/available/currency/' . $currencyId, false, true);
     }
@@ -155,9 +167,10 @@ class RamzinexApi
     /**
      *  میزان سرمایه در دسترس کاربر برای یک ارز مشخص *
      * @param $currencyId
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getTotalCurrencyBalance($currencyId)
+    public function getTotalCurrencyBalance($currencyId): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/total/currency/' . $currencyId, false, true);
     }
@@ -165,18 +178,20 @@ class RamzinexApi
     /**
      *  میزان سرمایه در حال معمامله کاربر برای یک ارز مشخص *
      * @param $currencyId
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getInOrdersCurrencyBalance($currencyId)
+    public function getInOrdersCurrencyBalance($currencyId): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/in_orders/currency/' . $currencyId, false, true);
     }
 
     /**
      * مشخصات سرمایه کاربر برای همه ارزها*
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getUserFunds()
+    public function getUserFunds(): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/details', false, true);
     }
@@ -184,9 +199,10 @@ class RamzinexApi
     /**
      * شبکه های موجود برای واریز و برداشت یک ارز *
      * @param array|null $data |currency_id,withdraw,deposit|
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getNetworks(array $data = null)
+    public function getNetworks(array $data = null): array
     {
         $fields_string = "";
         if (!is_null($data)) {
@@ -198,9 +214,10 @@ class RamzinexApi
     /**
      * آدرس های موجود برای یک کاربر *
      * @param array $networks
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getAddresses(array $networks)
+    public function getAddresses(array $networks): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/addresses', true, true, ['networks' => $networks]);
     }
@@ -209,9 +226,10 @@ class RamzinexApi
      * مشخصات واریز های انجام شده کاربر برای یک ارز مشخص *
      * @param $currencyId
      * @param array|null $data |limit,offset|
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getCurrencyDeposits($currencyId, array $data = null)
+    public function getCurrencyDeposits($currencyId, array $data = null): array
     {
         $fields_string = "";
         if (!is_null($data)) {
@@ -223,9 +241,10 @@ class RamzinexApi
     /**
      *  مشخصات یک واریز مشخص *
      * @param $depositId
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getDepositDetail($depositId)
+    public function getDepositDetail($depositId): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/deposits/' . $depositId, false, true);
     }
@@ -233,9 +252,10 @@ class RamzinexApi
     /**
      * مشخصات برداشت‌ها *
      * @param array|null $data |limit,offset|
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getCurrencyWithdraws(array $data = null)
+    public function getCurrencyWithdraws(array $data = null): array
     {
         $fields_string = "";
         if (!is_null($data)) {
@@ -247,9 +267,10 @@ class RamzinexApi
     /**
      * مشخصات یک برداشت خاص *
      * @param $withdrawId
-     * @return mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    public function getWithdrawDetail($withdrawId)
+    public function getWithdrawDetail($withdrawId): array
     {
         return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/withdraws/' . $withdrawId, false, true);
     }
@@ -258,8 +279,9 @@ class RamzinexApi
      * مشخصات یک ارز *
      * @param $currencyId
      * @return array
+     * @throws InvalidArgumentException
      */
-    public function getCurrency($currencyId = null)
+    public function getCurrency($currencyId = null): array
     {
         return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/currencies/' . $currencyId, false, true);
 
@@ -269,6 +291,7 @@ class RamzinexApi
      * لیست ارزها *
      * @param $currencyId
      * @return array
+     * @throws InvalidArgumentException
      */
     public function getCurrencies(): array
     {
@@ -283,7 +306,7 @@ class RamzinexApi
      * @return mixed
      * @throws InvalidArgumentException
      */
-    private function generateToken()
+    private function generateToken(): mixed
     {
         $data = $this->parseData($this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/auth/api_key/getToken', true, false, [
             'secret' => $this->secret,
@@ -291,7 +314,7 @@ class RamzinexApi
         ]));
 
         //save in cache file //
-        $this->cache_file->setItem('ramzinex_token', $this->token, 600);
+        $this->cache_file->setItem('ramzinex_token',@$data['token'], 600);
 
         return @$data['token'];
     }
@@ -301,7 +324,7 @@ class RamzinexApi
      * @return mixed
      * @throws InvalidArgumentException
      */
-    private function refreshToken()
+    private function refreshToken(): mixed
     {
         if ($token = $this->cache_file->getItem('ramzinex_token')) {
             return $token;
