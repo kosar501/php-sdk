@@ -276,6 +276,82 @@ class RamzinexApi
     }
 
     /**
+     * درخواست برداشت ارز *
+     * @param int $currencyId
+     * @param int $amount
+     * @param string $address
+     * @param int $network_id
+     * @param int|null $tag
+     * @param bool $no_tag
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public function addWithdraw(int $currencyId, int $amount, string $address, int $network_id, ?int $tag, bool $no_tag = false): array
+    {
+        $fields_string = http_build_query([
+            'currency_id' => $currencyId,
+            'amount' => $amount,
+            'address' => $address,
+            'network_id' => $network_id,
+            'tag' => $tag,
+            'no_tag' => $no_tag,
+        ]);
+
+        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/withdraws/currency/' . $currencyId . '?' . $fields_string, true, true);
+    }
+
+
+    /**
+     * تایید برداشت یک ارز *
+     * @param int $withdrawId
+     * @param int|null $code
+     * @param int|null $gAuth
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public function verifyWithdraw(int $withdrawId, int $code = null, int $gAuth = null): array
+    {
+        $data = [];
+        if ($code)
+            $data = array_push($data, ['code' => $code]);
+
+        if ($gAuth)
+            $data = array_push($data, ['gaCode' => $gAuth]);
+
+        $fields_string = "";
+        if (count($data) != 0)
+            $fields_string = http_build_query($data);
+
+
+        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/withdraws/' . $withdrawId . '/verify?' . $fields_string, true, true);
+    }
+
+
+    /**
+     * کنسل کردن یک برداشت مشخص *
+     * @param int $withdrawId
+     * @param int|null $code
+     * @param int|null $gAuth
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public function cancelWithdraw(int $withdrawId): array
+    {
+        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/withdraws/' . $withdrawId . '/cancel', true, true);
+    }
+
+    /**
+     * بروز رسانی واریز های یک ارز کاربر *
+     * @param int $currency_id
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public function updateWithdraw(int $currency_id): array
+    {
+        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/deposits/refresh/currency/' . $currency_id, true, true);
+    }
+
+    /**
      * مشخصات یک ارز *
      * @param $currencyId
      * @return array
@@ -308,15 +384,15 @@ class RamzinexApi
      */
     private function generateToken(): mixed
     {
-        $data = $this->parseData($this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/auth/api_key/getToken', true, false, [
+        $response =$this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/auth/api_key/getToken', true, false, [
             'secret' => $this->secret,
             'api_key' => $this->api_key
-        ]));
+        ]);
 
         //save in cache file //
-        $this->cache->setItem('ramzinex_token', @$data['token'], 600);
+        $this->cache->setItem('ramzinex_token', @$response['token'], 600);
 
-        return @$data['token'];
+        return @$response['token'];
     }
 
     /**
@@ -342,6 +418,7 @@ class RamzinexApi
      * @param $data
      * @return array
      * @throws InvalidArgumentException
+     * @throws \Exception
      */
     protected function execute($url, $post = false, $private = false, $data = null): array
     {
@@ -378,20 +455,41 @@ class RamzinexApi
         $result = curl_exec($ch);
         curl_close($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        return [
-            "http_code" => $httpCode,
-            "result" => json_decode($result, true)
-        ];
+        return $this->parseData(
+            [
+                "http_code" => $httpCode,
+                "result" => json_decode($result, true)
+            ]
+        );
 
 
     }
 
-
+    /**
+     * Handling Data response *
+     * @throws \Exception
+     */
     private function parseData($response)
     {
-        if ($response['http_code'] == 200)
-            return @$response['result'] && @$response['result']['data'] ? $response['result']['data'] : [];
-    }
+        switch ($response['http_code']) {
+            case 200:
+                if (@$response['result'])
+                    if (@$response['result']['status'] == 0)
+                        return @$response['result']['data'] ? $response['result']['data'] : [];
+                    else
+                        throw new \ErrorException(@$response['result']['description']['fa']);
+                break;
+            case 429:
+                throw new \ErrorException('تعداد درخواست های زیاد برای ای پی آی های غیر پابلیک');
 
+            case 500:
+            case 533:
+                throw new \ErrorException('خطا های مربوط به مشکلات سرور از سمت رمزینکس');
+
+            default:
+                throw new \ErrorException('خطااز سمت سرور');
+
+        }
+    }
 }
 
