@@ -62,6 +62,31 @@ class RamzinexApi
         return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/pairs/' . $pairId);
     }
 
+
+    /**
+     * قیمت تمام شده خرید یک ارز *
+     * @param $pairId
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public function getMarketBuyPrice($pairId): array
+    {
+        return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/orderbooks/' . $pairId . '/market_buy_price');
+    }
+
+
+    /**
+     * قیمت تمام شده فروش یک ارز *
+     * @param $pairId
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public function getMarketSellPrice($pairId): array
+    {
+        return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/orderbooks/' . $pairId . '/market_sell_price');
+    }
+
+
     /**
      * دریافت سفارش‌های کاربر *
      * @param array|null $body |limit,offset,pairs,states,isbuy|
@@ -281,23 +306,27 @@ class RamzinexApi
      * @param int $amount
      * @param string $address
      * @param int $network_id
-     * @param int|null $tag
+     * @param string|null $tag
      * @param bool $no_tag
      * @return array
      * @throws InvalidArgumentException
      */
-    public function addWithdraw(int $currencyId, int $amount, string $address, int $network_id, ?int $tag, bool $no_tag = false): array
+    public function addWithdraw(int $currencyId, int $amount, string $address, int $network_id, ?string $tag, bool $no_tag = false): array
     {
-        $fields_string = http_build_query([
+        $data = ([
             'currency_id' => $currencyId,
             'amount' => $amount,
             'address' => $address,
-            'network_id' => $network_id,
-            'tag' => $tag,
-            'no_tag' => $no_tag,
+            'network_id' => $network_id
         ]);
 
-        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/withdraws/currency/' . $currencyId . '?' . $fields_string, true, true);
+        if ($tag) {
+            $data = array_merge($data, [
+                'tag' => $tag ?? '',
+                'no_tag' => $no_tag,
+            ]);
+        }
+        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/funds/withdraws/currency/' . $currencyId, true, true, $data);
     }
 
 
@@ -384,7 +413,7 @@ class RamzinexApi
      */
     private function generateToken(): mixed
     {
-        $response =$this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/auth/api_key/getToken', true, false, [
+        $response = $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/auth/api_key/getToken', true, false, [
             'secret' => $this->secret,
             'api_key' => $this->api_key
         ]);
@@ -455,6 +484,7 @@ class RamzinexApi
         $result = curl_exec($ch);
         curl_close($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
         return $this->parseData(
             [
                 "http_code" => $httpCode,
@@ -478,7 +508,7 @@ class RamzinexApi
                         return @$response['result']['data'] ? $response['result']['data'] : [];
                     else
                         throw new \ErrorException(@$response['result']['description']['fa']);
-                break;
+                throw new \ErrorException('دیتایی یافت نشد');
             case 429:
                 throw new \ErrorException('تعداد درخواست های زیاد برای ای پی آی های غیر پابلیک');
 
