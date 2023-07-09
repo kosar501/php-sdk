@@ -62,28 +62,16 @@ class RamzinexApi
         return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/pairs/' . $pairId);
     }
 
-
     /**
-     * قیمت تمام شده خرید یک ارز *
+     * قیمت تمام شده فروش/خرید یک ارز *
      * @param $pairId
+     * @param string $type (buy | sell)
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getMarketBuyPrice($pairId): array
+    public function getMarketPrice($pairId, string $type = 'buy'): array
     {
-        return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/orderbooks/' . $pairId . '/market_buy_price');
-    }
-
-
-    /**
-     * قیمت تمام شده فروش یک ارز *
-     * @param $pairId
-     * @return array
-     * @throws InvalidArgumentException
-     */
-    public function getMarketSellPrice($pairId): array
-    {
-        return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/orderbooks/' . $pairId . '/market_sell_price');
+        return $this->execute('https://publicapi.ramzinex.com/exchange/api/v1.0/exchange/orderbooks/' . $pairId . '/market_' . $type . '_price');
     }
 
 
