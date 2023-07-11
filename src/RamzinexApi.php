@@ -83,7 +83,7 @@ class RamzinexApi
      */
     public function getOrders(array $body = null): array
     {
-        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/orders3', true, true, $body);
+        return $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/users/me/orders', true, true, $body);
     }
 
     /**
