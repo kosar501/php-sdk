@@ -301,12 +301,12 @@ class RamzinexApi
      */
     public function addWithdraw(int $currencyId,  $amount, string $address, int $network_id, ?string $tag, bool $no_tag = false): array
     {
-        $data = ([
+        $data = [
             'currency_id' => $currencyId,
             'amount' => $amount,
             'address' => $address,
             'network_id' => $network_id
-        ]);
+        ];
 
         if ($tag) {
             $data = array_merge($data, [
