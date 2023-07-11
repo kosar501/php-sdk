@@ -291,7 +291,7 @@ class RamzinexApi
     /**
      * درخواست برداشت ارز *
      * @param int $currencyId
-     * @param int $amount
+     * @param  $amount
      * @param string $address
      * @param int $network_id
      * @param string|null $tag
@@ -299,7 +299,7 @@ class RamzinexApi
      * @return array
      * @throws InvalidArgumentException
      */
-    public function addWithdraw(int $currencyId, int $amount, string $address, int $network_id, ?string $tag, bool $no_tag = false): array
+    public function addWithdraw(int $currencyId,  $amount, string $address, int $network_id, ?string $tag, bool $no_tag = false): array
     {
         $data = ([
             'currency_id' => $currencyId,
