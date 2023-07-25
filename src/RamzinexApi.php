@@ -500,7 +500,8 @@ class RamzinexApi
                 throw new \ErrorException('دیتایی یافت نشد');
             case 429:
                 throw new \ErrorException('تعداد درخواست های زیاد برای ای پی آی های غیر پابلیک');
-
+            case 403:
+                throw new \ErrorException('شما اجازه دسترسی به این api را ندارید');
             case 500:
             case 533:
                 throw new \ErrorException('خطا های مربوط به مشکلات سرور از سمت رمزینکس');
