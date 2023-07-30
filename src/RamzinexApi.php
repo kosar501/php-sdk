@@ -11,7 +11,7 @@ class RamzinexApi
     /**
      * @var string
      */
-    private string|array|null $headers;
+    private $headers;
 
     private string $secret;
     private string $api_key;
