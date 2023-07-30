@@ -471,8 +471,8 @@ class RamzinexApi
             curl_setopt($ch, CURLOPT_POST, false);
         }
         $result = curl_exec($ch);
-        curl_close($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
         return $this->parseData(
             [
