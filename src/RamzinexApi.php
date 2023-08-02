@@ -79,6 +79,8 @@ class RamzinexApi
      * دریافت سفارش‌های کاربر *
      * @param array|null $body |limit,offset,pairs,states,isbuy|
      * @return array
+     * @param array|null $body |limit,offset,pairs,states,isbuy|
+     * @return array
      * @throws InvalidArgumentException
      */
     public function getOrders(array $body = null): array
@@ -396,10 +398,9 @@ class RamzinexApi
     /**
      * ایجاد توکن خصوصی با استفاده از api_key && secret_key *
      * مدت زمان اعتبار 10 دقیقه می باشد *
-     * @return mixed
      * @throws InvalidArgumentException
      */
-    private function generateToken(): mixed
+    private function generateToken()
     {
         $response = $this->execute('https://ramzinex.com/exchange/api/v1.0/exchange/auth/api_key/getToken', true, false, [
             'secret' => $this->secret,
@@ -414,10 +415,9 @@ class RamzinexApi
 
     /**
      * ایجاد مجدد توکن در صورت انقضا *
-     * @return mixed
      * @throws InvalidArgumentException
      */
-    private function refreshToken(): mixed
+    private function refreshToken()
     {
         if (!$this->cache->isExpired('ramzinex_token')) {
             return $this->cache->getItem('ramzinex_token');
@@ -455,7 +455,6 @@ class RamzinexApi
             }
         }
 
-
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -472,6 +471,7 @@ class RamzinexApi
         }
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
         curl_close($ch);
 
         return $this->parseData(
