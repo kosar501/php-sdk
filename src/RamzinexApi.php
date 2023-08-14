@@ -78,8 +78,8 @@ class RamzinexApi
     /**
      * دریافت سفارش‌های کاربر *
      * @param array|null $body |limit,offset,pairs,states,isbuy|
-     * @return array
      * @param array|null $body |limit,offset,pairs,states,isbuy|
+     * @return array
      * @return array
      * @throws InvalidArgumentException
      */
@@ -301,7 +301,7 @@ class RamzinexApi
      * @return array
      * @throws InvalidArgumentException
      */
-    public function addWithdraw(int $currencyId,  $amount, string $address, int $network_id, ?string $tag, bool $no_tag = false): array
+    public function addWithdraw(int $currencyId, $amount, string $address, int $network_id, ?string $tag, bool $no_tag = false): array
     {
         $data = [
             'currency_id' => $currencyId,
@@ -454,6 +454,12 @@ class RamzinexApi
                 $headers[] = $header;
             }
         }
+
+        //remove ramzi url cache//
+        if (parse_url($url, PHP_URL_QUERY))
+            $url = $url . '&t=' . time();
+        else
+            $url = $url . '?t=' . time();
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
