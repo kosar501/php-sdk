@@ -15,32 +15,10 @@ After that you just need to pick your token
 Use in these ways :
 
 ```php
-composer require "ramzinex/sdk:dev-main"
+composer require kosar501/ramzinex-sdk
 
 ```
 
-or add
-
-```php
-"ramzinex/sdk": "dev-main",
-```
-
-and
-
-```php
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/kosar501/ramzinex-sdk"
-        }
-    ],
-```
-
-to your composer.json file and then run
-
-```php
-$ composer update
-```
 
 Usage
 -----
