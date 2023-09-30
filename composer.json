@@ -1,5 +1,5 @@
 {
-  "name": "ramzinex/sdk",
+  "name": "kosar501/ramzinex-sdk",
   "type": "library",
   "description": "A PHP wrapper for Ramzinex's API",
   "keywords": ["ramzinex", "api"],
